@@ -1,0 +1,119 @@
+{
+  "plan": "C:\\PROJ\\kova-cli\\.claude\\tasks\\kova-cli-phase1-build.md",
+  "started_at": "2026-03-15T03:00:01.517Z",
+  "status": "in_progress",
+  "tasks": {
+    "setup-foundation": {
+      "status": "pending",
+      "agent_type": "backend-engineer",
+      "model": "sonnet",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "copy-templates": {
+      "status": "pending",
+      "agent_type": "backend-engineer",
+      "model": "sonnet",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "build-core-lib": {
+      "status": "pending",
+      "agent_type": "backend-engineer",
+      "model": "sonnet",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "build-commands-1": {
+      "status": "pending",
+      "agent_type": "backend-engineer",
+      "model": "sonnet",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "build-commands-2": {
+      "status": "pending",
+      "agent_type": "backend-engineer",
+      "model": "sonnet",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "wire-commands": {
+      "status": "pending",
+      "agent_type": "backend-engineer",
+      "model": "haiku",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "write-unit-tests": {
+      "status": "pending",
+      "agent_type": "quality-engineer",
+      "model": "sonnet",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "write-integration-tests": {
+      "status": "pending",
+      "agent_type": "quality-engineer",
+      "model": "sonnet",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "write-readme": {
+      "status": "pending",
+      "agent_type": "general-purpose",
+      "model": "haiku",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "final-build": {
+      "status": "pending",
+      "agent_type": "backend-engineer",
+      "model": "haiku",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    },
+    "validate-all": {
+      "status": "pending",
+      "agent_type": "quality-engineer",
+      "model": "sonnet",
+      "agent_id": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_s": null,
+      "tokens": null
+    }
+  },
+  "token_usage": null,
+  "validation": null
+}

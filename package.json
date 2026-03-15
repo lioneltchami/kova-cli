@@ -1,0 +1,51 @@
+{
+  "name": "kova-cli",
+  "version": "0.1.0",
+  "description": "AI coding orchestration CLI - Plan the hunt. Run the pack.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "kova": "./bin/kova.js"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "templates/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "claude",
+    "ai",
+    "orchestration",
+    "multi-agent",
+    "coding",
+    "cli"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.3.0",
+    "chalk": "^5.4.0",
+    "commander": "^13.0.0",
+    "cosmiconfig": "^9.0.0",
+    "execa": "^9.5.0",
+    "glob": "^11.0.0",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
