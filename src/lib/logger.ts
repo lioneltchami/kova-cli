@@ -20,11 +20,11 @@ export function success(msg: string): void {
 }
 
 export function warn(msg: string): void {
-  console.log(chalk.yellow("  warn") + "  " + msg);
+  console.error(chalk.yellow("  warn") + "  " + msg);
 }
 
 export function error(msg: string): void {
-  console.log(chalk.red("  " + String.fromCharCode(10007)) + "  " + msg);
+  console.error(chalk.red("  " + String.fromCharCode(10007)) + "  " + msg);
 }
 
 export function debug(msg: string): void {
@@ -64,9 +64,9 @@ export function banner(): void {
   console.log();
   console.log(
     chalk.hex("#4361EE").bold("  KOVA") +
-      chalk.hex("#C0C0C8")("  |  AI coding orchestration CLI"),
+      chalk.hex("#C0C0C8")("  |  AI dev tool cost tracker"),
   );
-  console.log(chalk.dim("  Plan the hunt. Run the pack."));
+  console.log(chalk.dim("  Know what your AI tools actually cost."));
   console.log();
 }
 

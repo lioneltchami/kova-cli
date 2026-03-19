@@ -1,130 +1,35 @@
 import chalk from "chalk";
-import type { KovaConfig, PlanType } from "../types.js";
+import os from "os";
+import path from "path";
 
-export const VERSION = "0.1.0";
-export const KOVA_CONFIG_FILE = "kova.yaml";
-export const CLAUDE_DIR = ".claude";
-export const TASKS_DIR = ".claude/tasks";
+export const VERSION = "0.2.0";
+export const DASHBOARD_API_URL = "https://kova.dev/api/v1";
+
+export const KOVA_DATA_DIR = path.join(os.homedir(), ".kova");
+export const USAGE_FILE = "usage.json";
+export const CONFIG_FILE = "config.json";
+export const CLAUDE_CODE_DIR = path.join(os.homedir(), ".claude");
 
 export const colors = {
-	brand: chalk.hex("#4361EE"),
-	success: chalk.green,
-	warning: chalk.yellow,
-	error: chalk.red,
-	info: chalk.cyan,
-	dim: chalk.dim,
-	bold: chalk.bold,
-	wolf: chalk.hex("#C0C0C8"),
-};
-
-export const PLAN_ALLOCATIONS: Record<PlanType, number> = {
-	pro: 44000,
-	max5: 88000,
-	max20: 220000,
-	api: Infinity,
+  brand: chalk.hex("#4361EE"),
+  success: chalk.green,
+  warning: chalk.yellow,
+  error: chalk.red,
+  info: chalk.cyan,
+  dim: chalk.dim,
+  bold: chalk.bold,
+  wolf: chalk.hex("#C0C0C8"),
 };
 
 // Cost per 1M tokens in USD (approximate 2026 pricing)
 export const TOKEN_COSTS: Record<string, { input: number; output: number }> = {
-	haiku: { input: 0.25, output: 1.25 },
-	sonnet: { input: 3.0, output: 15.0 },
-	opus: { input: 15.0, output: 75.0 },
+  haiku: { input: 0.25, output: 1.25 },
+  sonnet: { input: 3.0, output: 15.0 },
+  opus: { input: 15.0, output: 75.0 },
+  "gpt-4o": { input: 2.5, output: 10.0 },
+  "gpt-4o-mini": { input: 0.15, output: 0.6 },
+  o1: { input: 15.0, output: 60.0 },
+  o3: { input: 10.0, output: 40.0 },
+  "gemini-pro": { input: 1.25, output: 5.0 },
+  "gemini-flash": { input: 0.075, output: 0.3 },
 };
-
-export const DEFAULT_CONFIG: KovaConfig = {
-	project: {
-		name: "",
-		language: "TypeScript",
-		framework: "",
-		package_manager: "npm",
-	},
-	models: {
-		auto: true,
-		trivial: "haiku",
-		moderate: "sonnet",
-		complex: "opus",
-		planning: "opus",
-	},
-	quality: {
-		test: null,
-		lint: null,
-		typecheck: null,
-		build: null,
-		validate_after_each_task: false,
-		validate_at_end: true,
-	},
-	agents: {
-		frontend: "frontend-specialist",
-		backend: "backend-engineer",
-		database: "supabase-specialist",
-		testing: "quality-engineer",
-		security: "security-auditor",
-		performance: "performance-optimizer",
-	},
-	boundaries: {
-		never_touch: ["*.lock", ".env*", "node_modules/**"],
-	},
-	rules: [],
-	execution: {
-		default_mode: "build",
-		max_parallel_agents: 4,
-		enable_resume: true,
-		enable_agent_teams: false,
-		task_timeout_seconds: 300,
-	},
-	notifications: {
-		on_build_complete: {
-			discord: null,
-			slack: null,
-			custom: null,
-		},
-	},
-	usage_tracking: {
-		enabled: true,
-		plan: "max5",
-		show_per_task: true,
-		show_build_summary: true,
-		show_cost_estimate: true,
-		warn_at_percent: 80,
-		pause_at_percent: 95,
-	},
-	plan_validation: {
-		required_sections: [
-			"Task Description",
-			"Objective",
-			"Relevant Files",
-			"Step by Step Tasks",
-			"Acceptance Criteria",
-			"Team Orchestration",
-		],
-		require_dependencies: true,
-		require_acceptance_criteria: true,
-	},
-};
-
-export const PLAN_TEMPLATE_NAMES = [
-	"feature",
-	"bugfix",
-	"refactor",
-	"migration",
-	"security",
-	"performance",
-] as const;
-
-export type PlanTemplateName = (typeof PLAN_TEMPLATE_NAMES)[number];
-
-// Template files that get scaffolded to .claude/
-export const TEMPLATE_FILES = [
-	"commands/team-plan.md",
-	"commands/build.md",
-	"commands/team-build.md",
-	"skills/session-management/SKILL.md",
-	"skills/sub-agent-invocation/SKILL.md",
-	"hooks/Validators/validate-new-file.mjs",
-	"hooks/Validators/validate-file-contains.mjs",
-	"hooks/FormatterHook/formatter.mjs",
-	"hooks/SkillActivationHook/skill-activation-prompt.mjs",
-	"agents/agent-rules.json",
-	"skills/skill-rules.json",
-	"settings.json",
-];

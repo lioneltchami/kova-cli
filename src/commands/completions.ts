@@ -1,9 +1,9 @@
-import * as logger from "../lib/logger.js";
 import {
   generateBashCompletion,
-  generateZshCompletion,
   generateFishCompletion,
+  generateZshCompletion,
 } from "../lib/completions.js";
+import * as logger from "../lib/logger.js";
 
 export async function completionsCommand(shell?: string): Promise<void> {
   if (!shell) {
@@ -30,6 +30,7 @@ export async function completionsCommand(shell?: string): Promise<void> {
       break;
     default:
       logger.error(`Unsupported shell: ${shell}. Supported: bash, zsh, fish`);
-      process.exit(1);
+      process.exitCode = 1;
+      return;
   }
 }

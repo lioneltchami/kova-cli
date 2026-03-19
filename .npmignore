@@ -1,0 +1,9 @@
+tests/
+.claude/
+docs/
+*.test.ts
+vitest.config.ts
+tsup.config.ts
+tsconfig.json
+.gitignore
+build.log

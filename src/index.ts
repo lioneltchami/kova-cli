@@ -14,138 +14,119 @@ const program = new Command();
 
 program
   .name("kova")
-  .description("AI coding orchestration CLI - Plan the hunt. Run the pack.")
+  .description(
+    "AI dev tool cost tracker - Know what your AI tools actually cost.",
+  )
   .version(VERSION);
 
-// Init command
+// Track command
 program
-  .command("init")
-  .description("Initialize a project for orchestrated development")
-  .option("-f, --force", "Overwrite existing .claude/ directory")
-  .option("-m, --merge", "Merge with existing .claude/ files")
-  .option("--dry-run", "Show what would be created without creating")
-  .option("--no-detect", "Skip auto-detection, use defaults")
-  .option("--preset <name>", "Use a preset configuration")
+  .command("track")
+  .description("Scan and record AI tool usage data")
+  .option("--since <date>", "Only collect usage since this date")
+  .option("--tool <tool>", "Only collect from specific tool")
+  .option("--daemon", "Run continuously at configured interval")
   .action(
     wrapCommandAction(async (options) => {
-      const { initCommand } = await import("./commands/init.js");
-      await initCommand(options);
+      const { trackCommand } = await import("./commands/track.js");
+      await trackCommand(options as import("./commands/track.js").TrackOptions);
     }),
   );
 
-// Plan command
+// Costs command
 program
-  .command("plan [prompt...]")
-  .description("Create an implementation plan")
-  .option("--model <model>", "Override planning model")
-  .option("--auto-build", "Skip approval, immediately build")
-  .option("--output <path>", "Custom output path for plan file")
-  .option(
-    "-t, --template <name>",
-    "Use a plan template (feature, bugfix, refactor, migration, security, performance)",
-  )
-  .option("--issue <number>", "Link a GitHub issue for context")
-  .option("--no-branch", "Disable auto-branch creation")
+  .command("costs")
+  .description("View AI tool cost breakdown and analytics")
+  .option("--today", "Show today only")
+  .option("--week", "Show last 7 days")
+  .option("--month [month]", "Show specific month (YYYY-MM)")
+  .option("--tool <tool>", "Filter by AI tool")
+  .option("--project <name>", "Filter by project")
+  .option("--detailed", "Show per-session breakdown")
+  .option("--json", "Output as JSON")
   .action(
-    wrapCommandAction(async (promptParts, options) => {
-      const { planCommand } = await import("./commands/plan.js");
-      const prompt = (promptParts as string[]).join(" ");
-      await planCommand(prompt, options);
+    wrapCommandAction(async (options) => {
+      const { costsCommand } = await import("./commands/costs.js");
+      await costsCommand(options as import("./commands/costs.js").CostsOptions);
     }),
   );
 
-// Run command (plan + build combined)
+// Budget command
 program
-  .command("run [prompt...]")
-  .description("Plan and build in one step")
-  .option("--model <model>", "Override planning model")
-  .option("-t, --template <name>", "Use a plan template")
-  .option("--no-auto", "Pause for approval before building")
-  .option("--live", "Show real-time build progress")
-  .option("--resume", "Resume from checkpoint")
-  .option("--verbose", "Show agent output in real-time")
-  .option("--issue <number>", "Link a GitHub issue for context")
-  .option("--branch <name>", "Custom branch name")
-  .option("--no-branch", "Disable auto-branch creation")
+  .command("budget [action]")
+  .description("Manage AI tool spending budgets")
+  .option("--monthly <amount>", "Set monthly budget in USD")
+  .option("--daily <amount>", "Set daily budget in USD")
+  .option("--warn-at <percent>", "Set warning threshold percentage")
   .action(
-    wrapCommandAction(async (promptParts, options) => {
-      const { runCommand } = await import("./commands/run.js");
-      const prompt = (promptParts as string[]).join(" ");
-      await runCommand(prompt, options);
-    }),
-  );
-
-// Build command
-program
-  .command("build [plan-path]")
-  .description("Execute a plan using sub-agent dispatch")
-  .option("--resume", "Resume from checkpoint")
-  .option("--parallel <n>", "Max parallel agents", parseInt)
-  .option("--model-override <model>", "Use this model for all tasks")
-  .option("--dry-run", "Show execution plan without running")
-  .option("--verbose", "Show agent output in real-time")
-  .option("--no-validate", "Skip quality validation step")
-  .option("--live", "Show real-time build progress")
-  .action(
-    wrapCommandAction(async (planPath, options) => {
-      const { buildCommand } = await import("./commands/build.js");
-      await buildCommand(planPath as string | undefined, options);
-    }),
-  );
-
-// Team-build command
-program
-  .command("team-build [plan-path]")
-  .description("Execute a plan using Agent Teams coordination")
-  .option("--resume", "Resume from checkpoint")
-  .option("--parallel <n>", "Max parallel agents", parseInt)
-  .option("--model-override <model>", "Use this model for all tasks")
-  .option("--dry-run", "Show execution plan without running")
-  .option("--verbose", "Show agent output in real-time")
-  .option("--no-validate", "Skip quality validation step")
-  .option("--wave-timeout <seconds>", "Max time per wave", parseInt)
-  .option("--live", "Show real-time build progress")
-  .action(
-    wrapCommandAction(async (planPath, options) => {
-      const { teamBuildCommand } = await import("./commands/team-build.js");
-      await teamBuildCommand(planPath as string | undefined, options);
-    }),
-  );
-
-// Status command
-program
-  .command("status")
-  .description("Check progress of current or recent builds")
-  .action(
-    wrapCommandAction(async () => {
-      const { statusCommand } = await import("./commands/status.js");
-      await statusCommand();
-    }),
-  );
-
-// Config command
-program
-  .command("config [action] [args...]")
-  .description("View or edit Kova configuration")
-  .action(
-    wrapCommandAction(async (action, args) => {
-      const { configCommand } = await import("./commands/config.js");
-      await configCommand(
+    wrapCommandAction(async (action, options) => {
+      const { budgetCommand } = await import("./commands/budget.js");
+      await budgetCommand(
         action as string | undefined,
-        args as string[] | undefined,
+        options as import("./commands/budget.js").BudgetOptions,
       );
     }),
   );
 
-// Update command
+// Sync command
 program
-  .command("update")
-  .description("Update scaffolded templates from latest package version")
-  .option("-f, --force", "Overwrite locally modified files")
+  .command("sync")
+  .description("Upload usage data to Kova cloud dashboard")
+  .option("--since <date>", "Only sync records since this date")
+  .option("--dry-run", "Show what would be synced without uploading")
   .action(
     wrapCommandAction(async (options) => {
-      const { updateCommand } = await import("./commands/update.js");
-      await updateCommand(options);
+      const { syncCommand } = await import("./commands/sync.js");
+      await syncCommand(options as import("./commands/sync.js").SyncOptions);
+    }),
+  );
+
+// Report command
+program
+  .command("report")
+  .description("Generate AI tool cost reports")
+  .option("--format <format>", "Output format: csv, json, or text", "text")
+  .option("--output <path>", "Write report to file")
+  .option("--month <month>", "Report for specific month (YYYY-MM)")
+  .action(
+    wrapCommandAction(async (options) => {
+      const { reportCommand } = await import("./commands/report.js");
+      await reportCommand(
+        options as import("./commands/report.js").ReportOptions,
+      );
+    }),
+  );
+
+// Login command
+program
+  .command("login [api-key]")
+  .description("Log in to the Kova dashboard with your API key")
+  .action(
+    wrapCommandAction(async (apiKey) => {
+      const { loginCommand } = await import("./commands/login.js");
+      await loginCommand(apiKey as string | undefined);
+    }),
+  );
+
+// Logout command
+program
+  .command("logout")
+  .description("Log out from the Kova dashboard")
+  .action(
+    wrapCommandAction(async () => {
+      const { logoutCommand } = await import("./commands/logout.js");
+      await logoutCommand();
+    }),
+  );
+
+// Account command
+program
+  .command("account")
+  .description("View your Kova account and subscription details")
+  .action(
+    wrapCommandAction(async () => {
+      const { accountCommand } = await import("./commands/account.js");
+      await accountCommand();
     }),
   );
 
@@ -157,21 +138,6 @@ program
     wrapCommandAction(async (shell) => {
       const { completionsCommand } = await import("./commands/completions.js");
       await completionsCommand(shell as string | undefined);
-    }),
-  );
-
-// PR command
-program
-  .command("pr")
-  .description("Create a GitHub Pull Request from the last build")
-  .option("--title <title>", "Override PR title")
-  .option("--body <body>", "Override PR body")
-  .option("--draft", "Create as draft PR")
-  .option("--base <branch>", "Target branch (default: main)")
-  .action(
-    wrapCommandAction(async (options) => {
-      const { prCommand } = await import("./commands/pr.js");
-      await prCommand(options);
     }),
   );
 

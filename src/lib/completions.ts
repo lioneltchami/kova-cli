@@ -1,117 +1,58 @@
 export interface CommandInfo {
   name: string;
   description: string;
-  options: Array<{ flags: string; description: string }>;
+  options: string[];
 }
 
 export function getCommandRegistry(): CommandInfo[] {
   return [
     {
-      name: "init",
-      description: "Initialize a project for orchestrated development",
+      name: "track",
+      description: "Scan and record AI tool usage data",
+      options: ["--since", "--tool", "--daemon"],
+    },
+    {
+      name: "costs",
+      description: "View AI tool cost breakdown and analytics",
       options: [
-        {
-          flags: "--force",
-          description: "Overwrite existing .claude/ directory",
-        },
-        { flags: "--merge", description: "Merge with existing .claude/ files" },
-        {
-          flags: "--dry-run",
-          description: "Show what would be created without creating",
-        },
-        { flags: "--no-detect", description: "Skip auto-detection" },
-        { flags: "--preset", description: "Use a preset configuration" },
+        "--today",
+        "--week",
+        "--month",
+        "--tool",
+        "--project",
+        "--detailed",
+        "--json",
       ],
     },
     {
-      name: "plan",
-      description: "Create an implementation plan",
-      options: [
-        { flags: "--model", description: "Override planning model" },
-        {
-          flags: "--auto-build",
-          description: "Skip approval, immediately build",
-        },
-        { flags: "--output", description: "Custom output path" },
-        { flags: "--template", description: "Use a plan template" },
-        { flags: "--issue", description: "Link a GitHub issue for context" },
-        { flags: "--no-branch", description: "Disable auto-branch creation" },
-      ],
+      name: "budget",
+      description: "Manage AI tool spending budgets",
+      options: ["--monthly", "--daily", "--warn-at"],
     },
     {
-      name: "run",
-      description: "Plan and build in one step",
-      options: [
-        { flags: "--model", description: "Override planning model" },
-        { flags: "--template", description: "Use a plan template" },
-        { flags: "--no-auto", description: "Pause for approval" },
-        { flags: "--live", description: "Show real-time progress" },
-        { flags: "--resume", description: "Resume from checkpoint" },
-        { flags: "--verbose", description: "Show agent output" },
-        { flags: "--issue", description: "Link a GitHub issue for context" },
-        { flags: "--branch", description: "Custom branch name" },
-        { flags: "--no-branch", description: "Disable auto-branch creation" },
-      ],
+      name: "sync",
+      description: "Upload usage data to Kova cloud dashboard",
+      options: ["--since", "--dry-run"],
     },
     {
-      name: "build",
-      description: "Execute a plan using sub-agent dispatch",
-      options: [
-        { flags: "--resume", description: "Resume from checkpoint" },
-        { flags: "--parallel", description: "Max parallel agents" },
-        {
-          flags: "--model-override",
-          description: "Use this model for all tasks",
-        },
-        { flags: "--dry-run", description: "Show execution plan" },
-        { flags: "--verbose", description: "Show agent output" },
-        { flags: "--no-validate", description: "Skip validation step" },
-        { flags: "--live", description: "Show real-time progress" },
-      ],
+      name: "report",
+      description: "Generate AI tool cost reports",
+      options: ["--format", "--output", "--month"],
     },
     {
-      name: "team-build",
-      description: "Execute a plan using Agent Teams coordination",
-      options: [
-        { flags: "--resume", description: "Resume from checkpoint" },
-        { flags: "--parallel", description: "Max parallel agents" },
-        {
-          flags: "--model-override",
-          description: "Use this model for all tasks",
-        },
-        { flags: "--dry-run", description: "Show execution plan" },
-        { flags: "--verbose", description: "Show agent output" },
-        { flags: "--no-validate", description: "Skip validation step" },
-        { flags: "--wave-timeout", description: "Max time per wave" },
-        { flags: "--live", description: "Show real-time progress" },
-      ],
-    },
-    {
-      name: "status",
-      description: "Check progress of current or recent builds",
+      name: "login",
+      description: "Log in to the Kova dashboard",
       options: [],
     },
     {
-      name: "config",
-      description: "View or edit Kova configuration",
+      name: "logout",
+      description: "Log out from the Kova dashboard",
       options: [],
     },
     {
-      name: "update",
-      description: "Update scaffolded templates",
-      options: [
-        { flags: "--force", description: "Overwrite locally modified files" },
-      ],
-    },
-    {
-      name: "pr",
-      description: "Create a GitHub Pull Request from the last build",
-      options: [
-        { flags: "--title", description: "Override PR title" },
-        { flags: "--body", description: "Override PR body" },
-        { flags: "--draft", description: "Create as draft PR" },
-        { flags: "--base", description: "Target branch" },
-      ],
+      name: "account",
+      description: "View account and subscription details",
+      options: [],
     },
     {
       name: "completions",
@@ -146,7 +87,7 @@ _kova_completions() {
 
   for (const cmd of commands) {
     if (cmd.options.length > 0) {
-      const flags = cmd.options.map((o) => o.flags).join(" ");
+      const flags = cmd.options.join(" ");
       script += `    ${cmd.name})\n      COMPREPLY=( $(compgen -W "${flags}" -- "\${cur}") )\n      ;;\n`;
     }
   }
@@ -192,8 +133,8 @@ _kova() {
   for (const cmd of commands) {
     if (cmd.options.length > 0) {
       script += `        ${cmd.name})\n          _arguments \\\n`;
-      for (const opt of cmd.options) {
-        script += `            '${opt.flags}[${opt.description}]' \\\n`;
+      for (const flag of cmd.options) {
+        script += `            '${flag}[${flag} option]' \\\n`;
       }
       script += `          ;;\n`;
     }
@@ -228,25 +169,10 @@ complete -c kova -f
   script += `\n# Command options\n`;
 
   for (const cmd of commands) {
-    for (const opt of cmd.options) {
-      const flag = opt.flags.replace(/^--/, "");
-      script += `complete -c kova -n "__fish_seen_subcommand_from ${cmd.name}" -l "${flag}" -d "${opt.description}"\n`;
+    for (const flag of cmd.options) {
+      const flagName = flag.replace(/^--/, "");
+      script += `complete -c kova -n "__fish_seen_subcommand_from ${cmd.name}" -l "${flagName}" -d "${flag}"\n`;
     }
-  }
-
-  // Add template completions for plan and run
-  script += `\n# Template completions\n`;
-  const templates = [
-    "feature",
-    "bugfix",
-    "refactor",
-    "migration",
-    "security",
-    "performance",
-  ];
-  for (const t of templates) {
-    script += `complete -c kova -n "__fish_seen_subcommand_from plan" -l "template" -xa "${t}"\n`;
-    script += `complete -c kova -n "__fish_seen_subcommand_from run" -l "template" -xa "${t}"\n`;
   }
 
   return script;

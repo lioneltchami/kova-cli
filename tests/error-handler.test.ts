@@ -109,7 +109,10 @@ describe("wrapCommandAction", () => {
   });
 
   it("logs the error message when an error is thrown", async () => {
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
 
     const action = async () => {
       throw new Error("my specific error");
@@ -118,7 +121,7 @@ describe("wrapCommandAction", () => {
     const wrapped = wrapCommandAction(action);
     await wrapped();
 
-    const allOutput = consoleSpy.mock.calls.flat().join(" ");
+    const allOutput = consoleErrorSpy.mock.calls.flat().join(" ");
     expect(allOutput).toContain("my specific error");
   });
 
