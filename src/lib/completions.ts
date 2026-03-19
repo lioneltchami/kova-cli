@@ -8,12 +8,14 @@ export function getCommandRegistry(): CommandInfo[] {
   return [
     {
       name: "track",
-      description: "Scan and record AI tool usage data",
+      description:
+        "Scan and record AI tool usage data (tools: claude_code, cursor, copilot, windsurf, devin)",
       options: ["--since", "--tool", "--daemon"],
     },
     {
       name: "costs",
-      description: "View AI tool cost breakdown and analytics",
+      description:
+        "View AI tool cost breakdown and analytics (tools: claude_code, cursor, copilot, windsurf, devin)",
       options: [
         "--today",
         "--week",
@@ -38,6 +40,11 @@ export function getCommandRegistry(): CommandInfo[] {
       name: "report",
       description: "Generate AI tool cost reports",
       options: ["--format", "--output", "--month"],
+    },
+    {
+      name: "config",
+      description: "Manage Kova configuration and tool credentials",
+      options: ["--set-key", "--remove-key", "--show-keys", "--set"],
     },
     {
       name: "login",

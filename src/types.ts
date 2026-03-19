@@ -15,9 +15,17 @@ export type AiModel =
   | "gpt-4o-mini"
   | "o1"
   | "o3"
+  | "gpt-4.1"
+  | "gpt-5"
+  | "gpt-5-mini"
   | "gemini-pro"
   | "gemini-flash"
+  | "swe-1.5"
+  | "swe-1.5-fast"
   | "unknown";
+
+// Per-tool API key storage (keyed by AiTool)
+export type ToolCredentials = Partial<Record<AiTool, string>>;
 
 export interface UsageRecord {
   id: string;

@@ -1,4 +1,9 @@
 import { claudeCodeCollector } from "../lib/collectors/claude-code.js";
+import { copilotCollector } from "../lib/collectors/copilot.js";
+import { cursorCollector } from "../lib/collectors/cursor.js";
+import { devinCollector } from "../lib/collectors/devin.js";
+import type { Collector } from "../lib/collectors/types.js";
+import { windsurfCollector } from "../lib/collectors/windsurf.js";
 import { readConfig } from "../lib/config-store.js";
 import { getDailyCosts } from "../lib/cost-calculator.js";
 import { formatMoney } from "../lib/formatter.js";
@@ -17,12 +22,12 @@ export interface TrackOptions {
 }
 
 // Map tool name strings to their collectors
-const COLLECTORS: Record<AiTool, typeof claudeCodeCollector | null> = {
+const COLLECTORS: Record<AiTool, Collector | null> = {
   claude_code: claudeCodeCollector,
-  cursor: null,
-  copilot: null,
-  devin: null,
-  windsurf: null,
+  cursor: cursorCollector,
+  copilot: copilotCollector,
+  devin: devinCollector,
+  windsurf: windsurfCollector,
 };
 
 async function runScan(options: TrackOptions): Promise<void> {
@@ -97,6 +102,17 @@ async function runScan(options: TrackOptions): Promise<void> {
   logger.success(
     `Scanned ${totalScannedFiles} files. Found ${totalNewRecords} new usage records. Spend today: ${formatMoney(todaySpend)}`,
   );
+
+  // Show hints for unconfigured tools
+  for (const tool of toolsToScan) {
+    const collector = COLLECTORS[tool];
+    if (collector && !(await collector.isAvailable())) {
+      logger.info(
+        `Tip: configure ${tool} with 'kova config set-key ${tool} <key>'`,
+      );
+      break; // Only show one hint per scan
+    }
+  }
 }
 
 export async function trackCommand(options: TrackOptions = {}): Promise<void> {

@@ -53,8 +53,8 @@ describe("getCommandRegistry includes auth commands", () => {
     expect(names).toContain("account");
   });
 
-  it("has 9 commands total (track, costs, budget, sync, report, login, logout, account, completions)", () => {
-    expect(getCommandRegistry()).toHaveLength(9);
+  it("has 10 commands total (track, costs, budget, sync, report, config, login, logout, account, completions)", () => {
+    expect(getCommandRegistry()).toHaveLength(10);
   });
 });
 

@@ -1,59 +1,59 @@
 {
-	"name": "kova-cli",
-	"version": "0.2.0",
-	"description": "AI dev tool cost tracker - Know what your AI tools actually cost.",
-	"type": "module",
-	"main": "./dist/index.js",
-	"bin": {
-		"kova": "./bin/kova.js"
-	},
-	"files": [
-		"bin/",
-		"dist/",
-		"templates/",
-		"README.md"
-	],
-	"scripts": {
-		"build": "tsup",
-		"dev": "tsup --watch",
-		"test": "vitest run",
-		"test:watch": "vitest",
-		"lint": "tsc --noEmit",
-		"prepublishOnly": "npm run build"
-	},
-	"keywords": [
-		"ai",
-		"developer-tools",
-		"cost-tracking",
-		"finops",
-		"claude-code",
-		"cursor",
-		"copilot",
-		"analytics",
-		"cli"
-	],
-	"author": "Lionel Tchami",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/lioneltchami/kova-cli.git"
-	},
-	"homepage": "https://github.com/lioneltchami/kova-cli#readme",
-	"bugs": {
-		"url": "https://github.com/lioneltchami/kova-cli/issues"
-	},
-	"license": "MIT",
-	"engines": {
-		"node": ">=18.0.0"
-	},
-	"dependencies": {
-		"chalk": "^5.4.0",
-		"commander": "^13.0.0",
-		"execa": "^9.5.0"
-	},
-	"devDependencies": {
-		"@types/node": "^22.0.0",
-		"tsup": "^8.4.0",
-		"typescript": "^5.7.0",
-		"vitest": "^3.0.0"
-	}
+  "name": "kova-cli",
+  "version": "0.3.0",
+  "description": "AI dev tool cost tracker - Know what your AI tools actually cost.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "kova": "./bin/kova.js"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "templates/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai",
+    "developer-tools",
+    "cost-tracking",
+    "finops",
+    "claude-code",
+    "cursor",
+    "copilot",
+    "analytics",
+    "cli"
+  ],
+  "author": "Lionel Tchami",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lioneltchami/kova-cli.git"
+  },
+  "homepage": "https://github.com/lioneltchami/kova-cli#readme",
+  "bugs": {
+    "url": "https://github.com/lioneltchami/kova-cli/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.4.0",
+    "commander": "^13.0.0",
+    "execa": "^9.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
 }
