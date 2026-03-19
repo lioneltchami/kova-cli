@@ -1,24 +1,31 @@
-import type { UsageRecord, UsageUploadPayload } from "../types.js";
+import type {
+  UsageRecord,
+  UsageUploadPayload,
+  UsageUploadResponse,
+} from "../types.js";
 import { VERSION } from "./constants.js";
 import { readCredentials } from "./dashboard.js";
 import * as logger from "./logger.js";
 
 const BATCH_SIZE = 500;
 
-export async function uploadUsage(records: UsageRecord[]): Promise<boolean> {
+export interface UploadResult {
+  success: boolean;
+  accepted: number;
+  duplicates: number;
+}
+
+export async function uploadUsage(
+  records: UsageRecord[],
+): Promise<UploadResult> {
   const creds = readCredentials();
   if (!creds?.apiKey) {
     logger.debug("uploadUsage: not logged in, skipping.");
-    return false;
+    return { success: false, accepted: 0, duplicates: 0 };
   }
 
-  if (records.length === 0) return true;
-
-  const timestamps = records.map((r) => r.timestamp).sort();
-  const period = {
-    from: timestamps[0] ?? new Date().toISOString(),
-    to: timestamps[timestamps.length - 1] ?? new Date().toISOString(),
-  };
+  if (records.length === 0)
+    return { success: true, accepted: 0, duplicates: 0 };
 
   // Split records into batches of BATCH_SIZE
   const batches: UsageRecord[][] = [];
@@ -28,24 +35,26 @@ export async function uploadUsage(records: UsageRecord[]): Promise<boolean> {
 
   const uploadUrl = `${creds.dashboardUrl}/api/v1/usage`;
   let allSucceeded = true;
+  let totalAccepted = 0;
+  let totalDuplicates = 0;
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex]!;
 
     const payload: UsageUploadPayload = {
-      cli_version: VERSION,
       records: batch.map((r) => ({
+        id: r.id,
         tool: r.tool,
         model: r.model,
+        session_id: r.session_id,
+        project: r.project,
         input_tokens: r.input_tokens,
         output_tokens: r.output_tokens,
         cost_usd: r.cost_usd,
         timestamp: r.timestamp,
-        project: r.project,
+        duration_ms: r.duration_ms,
+        cli_version: VERSION,
       })),
-      period,
-      os: process.platform,
-      node_version: process.version,
     };
 
     try {
@@ -65,8 +74,11 @@ export async function uploadUsage(records: UsageRecord[]): Promise<boolean> {
         );
         allSucceeded = false;
       } else {
+        const data = (await response.json()) as UsageUploadResponse;
+        totalAccepted += data.accepted ?? 0;
+        totalDuplicates += data.duplicates ?? 0;
         logger.debug(
-          `Upload batch ${batchIndex + 1}/${batches.length} succeeded (${batch.length} records).`,
+          `Upload batch ${batchIndex + 1}/${batches.length} succeeded: ${data.accepted} accepted, ${data.duplicates} duplicates.`,
         );
       }
     } catch (err) {
@@ -78,5 +90,9 @@ export async function uploadUsage(records: UsageRecord[]): Promise<boolean> {
     }
   }
 
-  return allSucceeded;
+  return {
+    success: allSucceeded,
+    accepted: totalAccepted,
+    duplicates: totalDuplicates,
+  };
 }

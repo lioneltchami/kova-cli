@@ -45,15 +45,25 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+function makeSuccessResponse(accepted = 1, duplicates = 0) {
+  return {
+    ok: true,
+    status: 201,
+    json: vi.fn().mockResolvedValue({ accepted, duplicates, errors: 0 }),
+  };
+}
+
 describe("uploadUsage", () => {
-  it("returns false when not logged in (no credentials)", async () => {
+  it("returns { success: false } when not logged in (no credentials)", async () => {
     // No credentials stored
     const { uploadUsage } = await import("../src/lib/uploader.js");
     const result = await uploadUsage([makeRecord("r1")]);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
+    expect(result.accepted).toBe(0);
+    expect(result.duplicates).toBe(0);
   });
 
-  it("sends correct payload shape with cli_version, period, os, node_version", async () => {
+  it("sends correct payload shape with id, session_id, duration_ms, cli_version per record", async () => {
     const { storeCredentials } = await import("../src/lib/dashboard.js");
     storeCredentials({
       apiKey: "kova_testkey",
@@ -64,7 +74,7 @@ describe("uploadUsage", () => {
       cachedAt: new Date().toISOString(),
     });
 
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    const mockFetch = vi.fn().mockResolvedValue(makeSuccessResponse());
     vi.stubGlobal("fetch", mockFetch);
 
     const { uploadUsage } = await import("../src/lib/uploader.js");
@@ -73,18 +83,26 @@ describe("uploadUsage", () => {
     expect(mockFetch).toHaveBeenCalledOnce();
     const [, requestInit] = mockFetch.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(requestInit.body as string) as {
-      cli_version: string;
-      period: { from: string; to: string };
-      os: string;
-      node_version: string;
+      records: Array<{
+        id: string;
+        session_id: string;
+        duration_ms: number | null;
+        cli_version: string;
+      }>;
     };
 
-    expect(body).toHaveProperty("cli_version");
-    expect(body).toHaveProperty("period");
-    expect(body.period).toHaveProperty("from");
-    expect(body.period).toHaveProperty("to");
-    expect(body).toHaveProperty("os");
-    expect(body).toHaveProperty("node_version");
+    expect(body).toHaveProperty("records");
+    expect(body.records).toHaveLength(1);
+    const record = body.records[0]!;
+    expect(record).toHaveProperty("id", "r1");
+    expect(record).toHaveProperty("session_id", "sess-1");
+    expect(record).toHaveProperty("duration_ms", null);
+    expect(record).toHaveProperty("cli_version");
+    // Top-level envelope fields removed -- payload is just { records: [...] }
+    expect(body).not.toHaveProperty("cli_version");
+    expect(body).not.toHaveProperty("period");
+    expect(body).not.toHaveProperty("os");
+    expect(body).not.toHaveProperty("node_version");
   });
 
   it("sends Bearer auth header", async () => {
@@ -98,7 +116,7 @@ describe("uploadUsage", () => {
       cachedAt: new Date().toISOString(),
     });
 
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    const mockFetch = vi.fn().mockResolvedValue(makeSuccessResponse());
     vi.stubGlobal("fetch", mockFetch);
 
     const { uploadUsage } = await import("../src/lib/uploader.js");
@@ -120,7 +138,7 @@ describe("uploadUsage", () => {
       cachedAt: new Date().toISOString(),
     });
 
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    const mockFetch = vi.fn().mockResolvedValue(makeSuccessResponse(500));
     vi.stubGlobal("fetch", mockFetch);
 
     const records = Array.from({ length: 501 }, (_, i) => makeRecord(`r${i}`));
@@ -154,7 +172,7 @@ describe("uploadUsage", () => {
       cachedAt: new Date().toISOString(),
     });
 
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    const mockFetch = vi.fn().mockResolvedValue(makeSuccessResponse(500));
     vi.stubGlobal("fetch", mockFetch);
 
     const records = Array.from({ length: 500 }, (_, i) => makeRecord(`r${i}`));
@@ -165,7 +183,7 @@ describe("uploadUsage", () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
-  it("returns true when all batches succeed (HTTP 200)", async () => {
+  it("returns { success: true, accepted, duplicates } when all batches succeed", async () => {
     const { storeCredentials } = await import("../src/lib/dashboard.js");
     storeCredentials({
       apiKey: "kova_testkey",
@@ -178,15 +196,17 @@ describe("uploadUsage", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ ok: true, status: 200 }),
+      vi.fn().mockResolvedValue(makeSuccessResponse(1, 1)),
     );
 
     const { uploadUsage } = await import("../src/lib/uploader.js");
     const result = await uploadUsage([makeRecord("r1"), makeRecord("r2")]);
-    expect(result).toBe(true);
+    expect(result.success).toBe(true);
+    expect(result.accepted).toBe(1);
+    expect(result.duplicates).toBe(1);
   });
 
-  it("returns false when any batch fails (HTTP 500)", async () => {
+  it("returns { success: false } when any batch fails (HTTP 500)", async () => {
     const { storeCredentials } = await import("../src/lib/dashboard.js");
     storeCredentials({
       apiKey: "kova_testkey",
@@ -204,10 +224,10 @@ describe("uploadUsage", () => {
 
     const { uploadUsage } = await import("../src/lib/uploader.js");
     const result = await uploadUsage([makeRecord("r1")]);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
   });
 
-  it("returns false on network error", async () => {
+  it("returns { success: false } on network error", async () => {
     const { storeCredentials } = await import("../src/lib/dashboard.js");
     storeCredentials({
       apiKey: "kova_testkey",
@@ -225,6 +245,29 @@ describe("uploadUsage", () => {
 
     const { uploadUsage } = await import("../src/lib/uploader.js");
     const result = await uploadUsage([makeRecord("r1")]);
-    expect(result).toBe(false);
+    expect(result.success).toBe(false);
+  });
+
+  it("logs duplicates at info level when server reports duplicates > 0", async () => {
+    const { storeCredentials } = await import("../src/lib/dashboard.js");
+    storeCredentials({
+      apiKey: "kova_testkey",
+      dashboardUrl: "https://kova.dev",
+      userId: "user-1",
+      email: "test@example.com",
+      plan: "pro",
+      cachedAt: new Date().toISOString(),
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(makeSuccessResponse(0, 3)),
+    );
+
+    const { uploadUsage } = await import("../src/lib/uploader.js");
+    const result = await uploadUsage([makeRecord("r1")]);
+    expect(result.success).toBe(true);
+    expect(result.duplicates).toBe(3);
+    expect(result.accepted).toBe(0);
   });
 });

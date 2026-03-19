@@ -121,7 +121,13 @@ describe("syncCommand", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ ok: true, status: 200 }),
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: vi
+          .fn()
+          .mockResolvedValue({ accepted: 1, duplicates: 0, errors: 0 }),
+      }),
     );
 
     const logger = await import("../../src/lib/logger.js");

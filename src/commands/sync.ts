@@ -43,12 +43,17 @@ export async function syncCommand(options: SyncOptions = {}): Promise<void> {
 
   logger.info(`Uploading ${records.length} records...`);
 
-  const success = await uploadUsage(records);
+  const result = await uploadUsage(records);
 
-  if (success) {
+  if (result.success) {
     logger.success(
-      `Synced ${records.length} records (${formatMoney(totalCost)}) to Kova dashboard.`,
+      `Synced ${result.accepted} records (${formatMoney(totalCost)}) to Kova dashboard.`,
     );
+    if (result.duplicates > 0) {
+      logger.info(
+        `${result.duplicates} duplicate record(s) skipped (already uploaded).`,
+      );
+    }
     logger.info("View your data at kova.dev/dashboard");
   } else {
     logger.warn(

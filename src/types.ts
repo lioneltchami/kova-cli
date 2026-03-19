@@ -102,19 +102,25 @@ export interface BudgetAlert {
 }
 
 export interface UsageUploadPayload {
-  cli_version: string;
   records: Array<{
+    id: string;
     tool: AiTool;
     model: string;
+    session_id: string;
+    project: string | null;
     input_tokens: number;
     output_tokens: number;
     cost_usd: number;
     timestamp: string;
-    project: string | null;
+    duration_ms: number | null;
+    cli_version: string;
   }>;
-  period: { from: string; to: string };
-  os: string;
-  node_version: string;
+}
+
+export interface UsageUploadResponse {
+  accepted: number;
+  duplicates: number;
+  errors: number;
 }
 
 export interface DashboardCredentials {
