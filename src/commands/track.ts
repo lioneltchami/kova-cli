@@ -6,6 +6,8 @@ import type { Collector } from "../lib/collectors/types.js";
 import { windsurfCollector } from "../lib/collectors/windsurf.js";
 import { readConfig } from "../lib/config-store.js";
 import { getDailyCosts } from "../lib/cost-calculator.js";
+import { isLoggedIn } from "../lib/dashboard.js";
+import { parseSinceDate } from "../lib/date-parser.js";
 import { formatMoney } from "../lib/formatter.js";
 import {
   appendRecords,
@@ -19,6 +21,7 @@ export interface TrackOptions {
   since?: string;
   tool?: string;
   daemon?: boolean;
+  autoSync?: boolean;
 }
 
 // Map tool name strings to their collectors
@@ -36,8 +39,8 @@ async function runScan(options: TrackOptions): Promise<void> {
   // Determine the since date: explicit flag takes precedence, then last scan
   let since: Date | undefined;
   if (options.since) {
-    const parsed = new Date(options.since);
-    if (isNaN(parsed.getTime())) {
+    const parsed = parseSinceDate(options.since);
+    if (parsed === null) {
       logger.warn(`Invalid date for --since: "${options.since}". Ignoring.`);
     } else {
       since = parsed;
@@ -102,6 +105,18 @@ async function runScan(options: TrackOptions): Promise<void> {
   logger.success(
     `Scanned ${totalScannedFiles} files. Found ${totalNewRecords} new usage records. Spend today: ${formatMoney(todaySpend)}`,
   );
+
+  // Auto-sync after scan if requested and user is logged in
+  if (options.autoSync && isLoggedIn()) {
+    logger.debug("Auto-sync: uploading usage records to dashboard...");
+    try {
+      const { syncCommand } = await import("./sync.js");
+      await syncCommand({});
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.debug(`Auto-sync failed (non-blocking): ${msg}`);
+    }
+  }
 
   // Show hints for unconfigured tools
   for (const tool of toolsToScan) {

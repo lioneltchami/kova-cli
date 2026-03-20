@@ -2,7 +2,7 @@ import chalk from "chalk";
 import os from "os";
 import path from "path";
 
-export const VERSION = "0.3.0";
+export const VERSION = "0.4.0";
 export const DASHBOARD_API_URL = "https://kova.dev/api/v1";
 
 export const KOVA_DATA_DIR = path.join(os.homedir(), ".kova");

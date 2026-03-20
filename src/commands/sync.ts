@@ -1,4 +1,10 @@
-import { isLoggedIn } from "../lib/dashboard.js";
+import {
+  checkSubscription,
+  isLoggedIn,
+  readCredentials,
+  storeCredentials,
+} from "../lib/dashboard.js";
+import { parseSinceDate } from "../lib/date-parser.js";
 import { formatMoney } from "../lib/formatter.js";
 import { queryRecords } from "../lib/local-store.js";
 import * as logger from "../lib/logger.js";
@@ -15,10 +21,39 @@ export async function syncCommand(options: SyncOptions = {}): Promise<void> {
     return;
   }
 
+  // Plan enforcement: free plan cannot use cloud sync
+  const creds = readCredentials();
+  if (creds?.plan === "free") {
+    let liveResult: { plan: string; active: boolean } | null = null;
+    try {
+      liveResult = await checkSubscription();
+    } catch {
+      // Network error -- allow sync to proceed (offline-tolerant)
+      liveResult = null;
+    }
+
+    if (liveResult !== null) {
+      if (liveResult.plan === "free" || !liveResult.active) {
+        logger.warn("Cloud sync requires a Kova Pro subscription.");
+        logger.info("Upgrade at: kova.dev/pricing");
+        logger.info("Already subscribed? Run: kova login <new-api-key>");
+        return;
+      }
+      // Live check returned pro/enterprise -- update cached credentials
+      const updatedCreds = {
+        ...creds,
+        plan: liveResult.plan as "free" | "pro" | "team" | "enterprise",
+        cachedAt: new Date().toISOString(),
+      };
+      storeCredentials(updatedCreds);
+    }
+    // If liveResult is null (network error), fall through and allow sync
+  }
+
   let since: Date | undefined;
   if (options.since) {
-    const parsed = new Date(options.since);
-    if (isNaN(parsed.getTime())) {
+    const parsed = parseSinceDate(options.since);
+    if (parsed === null) {
       logger.warn(`Invalid date for --since: "${options.since}". Ignoring.`);
     } else {
       since = parsed;
