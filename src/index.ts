@@ -204,6 +204,115 @@ program
     }),
   );
 
+// Data export command (GDPR right-to-portability)
+program
+  .command("data export")
+  .description("Export your local usage data to a JSON file")
+  .option("--output <path>", "Path to write the export file")
+  .action(
+    wrapCommandAction(async (options) => {
+      const { dataExportCommand } = await import("./commands/data-export.js");
+      await dataExportCommand(
+        options as import("./commands/data-export.js").DataExportOptions,
+      );
+    }),
+  );
+
+// Tag command
+program
+  .command("tag [project]")
+  .description("Map a project directory to a cost center")
+  .option("--cost-center <name>", "Cost center name to assign the project to")
+  .action(
+    wrapCommandAction(async (project, options) => {
+      const { tagCommand } = await import("./commands/tag.js");
+      await tagCommand(
+        project as string | undefined,
+        options as import("./commands/tag.js").TagOptions,
+      );
+    }),
+  );
+
+// CI report command
+program
+  .command("ci-report")
+  .description("Generate a cost report for CI/CD pipelines")
+  .option("--format <format>", "Output format: json or table", "table")
+  .option("--period <period>", "Time period: 7d or 30d", "7d")
+  .action(
+    wrapCommandAction(async (options) => {
+      const { ciReportCommand } = await import("./commands/ci-report.js");
+      await ciReportCommand(
+        options as import("./commands/ci-report.js").CiReportOptions,
+      );
+    }),
+  );
+
+// Audit command
+program
+  .command("audit [action]")
+  .description("Export audit log data (action: export)")
+  .option("--format <format>", "Output format: csv or json", "json")
+  .option("--since <month>", "Export records since month (YYYY-MM)")
+  .option("--output <path>", "Write audit log to file")
+  .option("--local", "Use local data only, even if logged in")
+  .action(
+    wrapCommandAction(async (_action, options) => {
+      const { auditExportCommand } = await import("./commands/audit.js");
+      await auditExportCommand(
+        options as import("./commands/audit.js").AuditExportOptions,
+      );
+    }),
+  );
+
+// SSO command
+program
+  .command("sso <action>")
+  .description("Manage SSO authentication (actions: configure, login, status)")
+  .option("--issuer <url>", "SSO issuer URL (for sso configure)")
+  .action(
+    wrapCommandAction(async (action, options) => {
+      const ssoModule = await import("./commands/sso.js");
+      if (action === "configure") {
+        await ssoModule.ssoConfigureCommand(
+          options as import("./commands/sso.js").SsoConfigureOptions,
+        );
+      } else if (action === "login") {
+        await ssoModule.ssoLoginCommand();
+      } else if (action === "status") {
+        await ssoModule.ssoStatusCommand();
+      } else {
+        logger.error(
+          `Unknown sso action: ${String(action)}. Use configure, login, or status.`,
+        );
+      }
+    }),
+  );
+
+// Policy command
+program
+  .command("policy [action] [key] [value]")
+  .description("Manage org policies (actions: list, set, enforce) [Enterprise]")
+  .action(
+    wrapCommandAction(async (action, key, value) => {
+      const policyModule = await import("./commands/policy.js");
+      if (!action || action === "list") {
+        await policyModule.policyListCommand();
+      } else if (action === "set") {
+        await policyModule.policySetCommand(
+          key as string | undefined,
+          value as string | undefined,
+        );
+      } else if (action === "enforce") {
+        await policyModule.policyEnforceCommand();
+      } else {
+        logger.error(
+          `Unknown policy action: ${String(action)}. Use list, set, or enforce.`,
+        );
+      }
+    }),
+  );
+
 // Handle unknown commands with suggestions
 program.on("command:*", (operands: string[]) => {
   const unknown = operands[0] ?? "";

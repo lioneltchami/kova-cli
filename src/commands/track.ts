@@ -1,7 +1,13 @@
+import { aiderCollector } from "../lib/collectors/aider.js";
+import { amazonQCollector } from "../lib/collectors/amazon-q.js";
+import { boltCollector } from "../lib/collectors/bolt.js";
 import { claudeCodeCollector } from "../lib/collectors/claude-code.js";
+import { clineCollector } from "../lib/collectors/cline.js";
+import { continueDevCollector } from "../lib/collectors/continue-dev.js";
 import { copilotCollector } from "../lib/collectors/copilot.js";
 import { cursorCollector } from "../lib/collectors/cursor.js";
 import { devinCollector } from "../lib/collectors/devin.js";
+import { lovableCollector } from "../lib/collectors/lovable.js";
 import type { Collector } from "../lib/collectors/types.js";
 import { windsurfCollector } from "../lib/collectors/windsurf.js";
 import { readConfig } from "../lib/config-store.js";
@@ -31,6 +37,12 @@ const COLLECTORS: Record<AiTool, Collector | null> = {
   copilot: copilotCollector,
   devin: devinCollector,
   windsurf: windsurfCollector,
+  aider: aiderCollector,
+  continue_dev: continueDevCollector,
+  cline: clineCollector,
+  amazon_q: amazonQCollector,
+  bolt: boltCollector,
+  lovable: lovableCollector,
 };
 
 async function runScan(options: TrackOptions): Promise<void> {

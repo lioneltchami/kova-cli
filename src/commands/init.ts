@@ -1,19 +1,25 @@
-import * as readline from "node:readline";
 import { exec } from "node:child_process";
+import * as readline from "node:readline";
+import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-import chalk from "chalk";
+import { aiderCollector } from "../lib/collectors/aider.js";
+import { amazonQCollector } from "../lib/collectors/amazon-q.js";
+import { boltCollector } from "../lib/collectors/bolt.js";
 import { claudeCodeCollector } from "../lib/collectors/claude-code.js";
+import { clineCollector } from "../lib/collectors/cline.js";
+import { continueDevCollector } from "../lib/collectors/continue-dev.js";
 import { copilotCollector } from "../lib/collectors/copilot.js";
 import { cursorCollector } from "../lib/collectors/cursor.js";
 import { devinCollector } from "../lib/collectors/devin.js";
-import { windsurfCollector } from "../lib/collectors/windsurf.js";
+import { lovableCollector } from "../lib/collectors/lovable.js";
 import type { Collector } from "../lib/collectors/types.js";
-import { readCredentials, storeCredentials } from "../lib/dashboard.js";
-import { appendRecords } from "../lib/local-store.js";
-import { getDailyCosts } from "../lib/cost-calculator.js";
-import { formatMoney } from "../lib/formatter.js";
+import { windsurfCollector } from "../lib/collectors/windsurf.js";
 import { colors, KOVA_DATA_DIR } from "../lib/constants.js";
+import { getDailyCosts } from "../lib/cost-calculator.js";
+import { readCredentials, storeCredentials } from "../lib/dashboard.js";
+import { formatMoney } from "../lib/formatter.js";
+import { appendRecords } from "../lib/local-store.js";
 import type { AiTool } from "../types.js";
 
 // ---------------------------------------------------------------------------
@@ -78,6 +84,16 @@ const ALL_TOOLS: ToolEntry[] = [
   { key: "copilot", label: "GitHub Copilot", collector: copilotCollector },
   { key: "windsurf", label: "Windsurf", collector: windsurfCollector },
   { key: "devin", label: "Devin", collector: devinCollector },
+  { key: "aider", label: "Aider", collector: aiderCollector },
+  {
+    key: "continue_dev",
+    label: "Continue.dev",
+    collector: continueDevCollector,
+  },
+  { key: "cline", label: "Cline", collector: clineCollector },
+  { key: "amazon_q", label: "Amazon Q Developer", collector: amazonQCollector },
+  { key: "bolt", label: "Bolt.new", collector: boltCollector },
+  { key: "lovable", label: "Lovable", collector: lovableCollector },
 ];
 
 // ---------------------------------------------------------------------------

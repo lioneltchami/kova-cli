@@ -1,0 +1,44 @@
+name: "Kova AI Cost Report"
+description: "Track AI coding tool costs and post reports on PRs"
+inputs:
+  kova-api-key:
+    description: "Kova API key for authentication"
+    required: true
+  github-token:
+    description: "GitHub token for PR comments"
+    required: true
+    default: ${{ github.token }}
+  period:
+    description: "Report period (7d, 30d)"
+    default: "7d"
+  fail-on-increase:
+    description: "Fail if costs increased vs baseline"
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Install Kova CLI
+      shell: bash
+      run: npm install -g kova-cli
+    - name: Generate Report
+      shell: bash
+      run: kova ci-report --format json --period ${{ inputs.period }} > kova-report.json
+      env:
+        KOVA_API_KEY: ${{ inputs.kova-api-key }}
+    - name: Post PR Comment
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const report = require('./kova-report.json');
+          const body = `## Kova AI Cost Report\n\n**Period cost:** $${report.period_cost_usd?.toFixed(2) ?? '0.00'}\n**Sessions:** ${report.sessions ?? 0}\n\n[View Dashboard](https://kova.dev/dashboard)`;
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number
+          });
+          const existing = comments.find(c => c.body?.includes('Kova AI Cost Report'));
+          if (existing) {
+            await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });
+          } else {
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body });
+          }

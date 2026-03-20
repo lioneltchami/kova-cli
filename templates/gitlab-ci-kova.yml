@@ -1,0 +1,9 @@
+kova-cost-report:
+  stage: test
+  image: node:20-alpine
+  script:
+    - npm install -g kova-cli
+    - kova ci-report --format table --period 7d
+  variables:
+    KOVA_API_KEY: $KOVA_API_KEY
+  allow_failure: true
