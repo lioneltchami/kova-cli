@@ -44,10 +44,15 @@ function mapCursorModel(raw: string | undefined): AiModel {
   return "unknown";
 }
 
-function makeId(timestamp: string, model: string, inputTokens: number): string {
+function makeId(
+  timestamp: string,
+  model: string,
+  inputTokens: number,
+  outputTokens: number,
+): string {
   return crypto
     .createHash("sha256")
-    .update(`cursor:${timestamp}:${model}:${inputTokens}`)
+    .update(`cursor:${timestamp}:${model}:${inputTokens}:${outputTokens}`)
     .digest("hex")
     .slice(0, 16);
 }
@@ -211,7 +216,12 @@ export const cursorCollector: Collector = {
           cost_usd = computeCostFromTokens(inputTokens, outputTokens);
         }
 
-        const id = makeId(timestamp, event.model ?? "", inputTokens);
+        const id = makeId(
+          timestamp,
+          event.model ?? "",
+          inputTokens,
+          outputTokens,
+        );
 
         // Deduplicate within this collection run.
         if (seenIds.has(id)) continue;

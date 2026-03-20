@@ -24,10 +24,14 @@ interface DevinResponse {
   consumption_by_date?: DailyConsumptionEntry[];
 }
 
-function makeId(date: string, acus: number): string {
+function makeId(
+  date: string,
+  acus: number,
+  acusByProduct: AcusByProduct | undefined,
+): string {
   return crypto
     .createHash("sha256")
-    .update(`devin:${date}:${acus}`)
+    .update(`devin:${date}:${acus}:${JSON.stringify(acusByProduct || {})}`)
     .digest("hex")
     .slice(0, 16);
 }
@@ -115,7 +119,7 @@ export const devinCollector: Collector = {
       // Convert unix timestamp to ISO date string
       const dateIso = new Date(unixDate * 1000).toISOString();
       const cost = acus * DEVIN_ACU_COST_TEAMS;
-      const id = makeId(dateIso, acus);
+      const id = makeId(dateIso, acus, entry.acus_by_product);
 
       records.push({
         id,

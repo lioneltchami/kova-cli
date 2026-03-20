@@ -45,10 +45,11 @@ function makeId(
   model: string,
   mode: string,
   messagesSent: number,
+  promptsUsed: number,
 ): string {
   return crypto
     .createHash("sha256")
-    .update(`windsurf:${day}:${model}:${mode}:${messagesSent}`)
+    .update(`windsurf:${day}:${model}:${mode}:${messagesSent}:${promptsUsed}`)
     .digest("hex")
     .slice(0, 16);
 }
@@ -143,7 +144,7 @@ export const windsurfCollector: Collector = {
       const cost = credits * WINDSURF_CREDIT_RATE_TEAMS;
 
       const model = mapModelName(rawModel);
-      const id = makeId(day, rawModel, mode, messagesSent);
+      const id = makeId(day, rawModel, mode, messagesSent, promptsUsed);
 
       // day is a date string like "2025-01-15"; build an ISO timestamp
       const timestamp = day

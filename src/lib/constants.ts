@@ -8,7 +8,8 @@ export const DASHBOARD_API_URL = "https://kova.dev/api/v1";
 export const KOVA_DATA_DIR = path.join(os.homedir(), ".kova");
 export const USAGE_FILE = "usage.json";
 export const CONFIG_FILE = "config.json";
-export const CLAUDE_CODE_DIR = path.join(os.homedir(), ".claude");
+export const CLAUDE_CODE_DIR =
+  process.env["CLAUDE_HOME"] ?? path.join(os.homedir(), ".claude");
 
 // Cursor state database paths by platform
 export const CURSOR_STATE_DB_PATHS: Record<string, string> = {

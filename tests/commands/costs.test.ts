@@ -128,13 +128,24 @@ describe("costsCommand", () => {
   });
 
   it("--today filters to today's records only", async () => {
-    const today = new Date().toISOString().slice(0, 10);
+    // Build today's timestamp using local date at local noon to avoid timezone
+    // boundary issues (toISOString() gives UTC date which may differ from local date).
+    const now = new Date();
+    const localNoon = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      12,
+      0,
+      0,
+      0,
+    );
     await seedRecords([
       makeRecord("r1", {
         cost_usd: 5.0,
         timestamp: "2026-01-01T10:00:00.000Z",
       }),
-      makeRecord("r2", { cost_usd: 0.25, timestamp: `${today}T10:00:00.000Z` }),
+      makeRecord("r2", { cost_usd: 0.25, timestamp: localNoon.toISOString() }),
     ]);
 
     const cap = captureConsoleLog();

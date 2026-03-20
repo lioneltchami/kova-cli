@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import type { AiTool, UsageDatabase, UsageRecord } from "../types.js";
 import { KOVA_DATA_DIR, USAGE_FILE } from "./constants.js";
+import * as logger from "./logger.js";
 
 export function getUsageDatabasePath(): string {
   return path.join(KOVA_DATA_DIR, USAGE_FILE);
@@ -34,7 +35,7 @@ export function writeUsageDatabase(db: UsageDatabase): void {
   const content = JSON.stringify(db, null, 2);
 
   try {
-    fs.writeFileSync(tmpPath, content, "utf-8");
+    fs.writeFileSync(tmpPath, content, { encoding: "utf-8", mode: 0o600 });
     try {
       // Atomic rename (POSIX) - preferred approach
       fs.renameSync(tmpPath, dbPath);
@@ -74,6 +75,17 @@ export function appendRecords(records: UsageRecord[]): number {
   }
 
   if (added > 0) {
+    const MAX_RECORDS = 100_000;
+    if (db.records.length > MAX_RECORDS) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - 90);
+      const cutoffISO = cutoffDate.toISOString();
+      const before = db.records.length;
+      db.records = db.records.filter((r) => r.timestamp >= cutoffISO);
+      logger.warn(
+        `Pruned ${before - db.records.length} records older than 90 days (exceeded ${MAX_RECORDS} limit)`,
+      );
+    }
     writeUsageDatabase(db);
   }
 

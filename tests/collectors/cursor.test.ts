@@ -273,11 +273,14 @@ describe("CursorCollector - deterministic IDs", () => {
       timestamp: "2026-03-15T10:00:00.000Z",
       model: "claude-sonnet-4-20250514",
       inputTokens: 1000,
+      outputTokens: 500,
     });
 
     const expectedId = crypto
       .createHash("sha256")
-      .update(`cursor:2026-03-15T10:00:00.000Z:claude-sonnet-4-20250514:1000`)
+      .update(
+        `cursor:2026-03-15T10:00:00.000Z:claude-sonnet-4-20250514:1000:500`,
+      )
       .digest("hex")
       .slice(0, 16);
 
@@ -330,6 +333,47 @@ describe("CursorCollector - deterministic IDs", () => {
 
     const result = await cursorCollector.collect();
     expect(result.records[0]?.id).toMatch(/^[0-9a-f]{16}$/);
+  });
+
+  it("different outputTokens produces different IDs (collision prevention)", async () => {
+    // Same timestamp/model/inputTokens but different outputTokens must yield distinct IDs
+    vi.resetModules();
+    vi.doMock("../../src/lib/credential-manager.js", () => ({
+      getToolKey: vi.fn().mockReturnValue("admin-key"),
+      setToolKey: vi.fn(),
+      removeToolKey: vi.fn(),
+      listConfiguredTools: vi.fn(() => []),
+    }));
+    const { cursorCollector } =
+      await import("../../src/lib/collectors/cursor.js");
+
+    const event1 = makeEvent({
+      timestamp: "2026-03-15T10:00:00.000Z",
+      model: "claude-sonnet-4-20250514",
+      inputTokens: 1000,
+      outputTokens: 100,
+    });
+    const event2 = makeEvent({
+      timestamp: "2026-03-15T10:00:00.000Z",
+      model: "claude-sonnet-4-20250514",
+      inputTokens: 1000,
+      outputTokens: 500,
+    });
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ events: [event1, event2] }),
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ events: [] }),
+    });
+
+    const result = await cursorCollector.collect();
+    expect(result.records).toHaveLength(2);
+    expect(result.records[0]?.id).not.toBe(result.records[1]?.id);
   });
 });
 
