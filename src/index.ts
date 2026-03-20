@@ -34,6 +34,26 @@ program
     }),
   );
 
+// Compare command
+program
+  .command("compare")
+  .description("Compare AI tool or model costs side-by-side")
+  .option("--tools", "Group comparison by tool (default)")
+  .option("--models", "Group comparison by model")
+  .option(
+    "--period <period>",
+    "Time period to compare (e.g. 7d, 30d, 90d)",
+    "30d",
+  )
+  .action(
+    wrapCommandAction(async (options) => {
+      const { compareCommand } = await import("./commands/compare.js");
+      await compareCommand(
+        options as import("./commands/compare.js").CompareOptions,
+      );
+    }),
+  );
+
 // Costs command
 program
   .command("costs")
@@ -159,6 +179,28 @@ program
     wrapCommandAction(async (shell) => {
       const { completionsCommand } = await import("./commands/completions.js");
       await completionsCommand(shell as string | undefined);
+    }),
+  );
+
+// Init command
+program
+  .command("init")
+  .description("Interactive onboarding wizard - detect tools and first scan")
+  .action(
+    wrapCommandAction(async () => {
+      const { initCommand } = await import("./commands/init.js");
+      await initCommand();
+    }),
+  );
+
+// Dashboard command
+program
+  .command("dashboard")
+  .description("Open the Kova web dashboard in your browser")
+  .action(
+    wrapCommandAction(async () => {
+      const { dashboardCommand } = await import("./commands/dashboard.js");
+      await dashboardCommand();
     }),
   );
 
