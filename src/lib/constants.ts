@@ -2,12 +2,13 @@ import chalk from "chalk";
 import os from "os";
 import path from "path";
 
-export const VERSION = "1.0.0";
+export const VERSION = "2.1.0";
 export const DASHBOARD_API_URL = "https://kova.dev/api/v1";
 
 export const KOVA_DATA_DIR = path.join(os.homedir(), ".kova");
 export const USAGE_FILE = "usage.json";
 export const CONFIG_FILE = "config.json";
+export const PROVIDER_CREDENTIALS_FILE = "provider-keys.json";
 export const CLAUDE_CODE_DIR =
   process.env["CLAUDE_HOME"] ?? path.join(os.homedir(), ".claude");
 
@@ -134,13 +135,68 @@ export const TOKEN_COSTS: Record<string, { input: number; output: number }> = {
   "gpt-5": { input: 1.25, output: 10.0 },
   "gpt-5-mini": { input: 0.4, output: 1.6 },
   o1: { input: 15.0, output: 60.0 },
+  "gpt-4.1-mini": { input: 0.4, output: 1.6 },
+  "gpt-4.1-nano": { input: 0.1, output: 0.4 },
   o3: { input: 10.0, output: 40.0 },
+  "o4-mini": { input: 0.55, output: 2.2 },
   // Google models
   "gemini-pro": { input: 1.25, output: 5.0 },
   "gemini-flash": { input: 0.075, output: 0.3 },
   // Windsurf models
   "swe-1.5": { input: 0, output: 0 },
   "swe-1.5-fast": { input: 0.5, output: 2.0 },
+};
+
+export const MODEL_TIERS: Record<
+  string,
+  { tier: string; provider: string; sdkId: string }
+> = {
+  haiku: {
+    tier: "cheap",
+    provider: "anthropic",
+    sdkId: "claude-haiku-4-5-20251001",
+  },
+  sonnet: {
+    tier: "mid",
+    provider: "anthropic",
+    sdkId: "claude-sonnet-4-20250514",
+  },
+  opus: {
+    tier: "strong",
+    provider: "anthropic",
+    sdkId: "claude-opus-4-20250115",
+  },
+  "gpt-4.1-nano": { tier: "cheap", provider: "openai", sdkId: "gpt-4.1-nano" },
+  "gpt-4.1-mini": { tier: "cheap", provider: "openai", sdkId: "gpt-4.1-mini" },
+  "gpt-4.1": { tier: "mid", provider: "openai", sdkId: "gpt-4.1" },
+  "gpt-4o": { tier: "mid", provider: "openai", sdkId: "gpt-4o" },
+  o3: { tier: "strong", provider: "openai", sdkId: "o3" },
+  "o4-mini": { tier: "mid", provider: "openai", sdkId: "o4-mini" },
+  "gemini-flash": {
+    tier: "cheap",
+    provider: "google",
+    sdkId: "gemini-2.5-flash",
+  },
+  "gemini-pro": { tier: "mid", provider: "google", sdkId: "gemini-2.5-pro" },
+};
+
+export const DEFAULT_ROUTING = {
+  simple: "anthropic:claude-haiku-4-5-20251001",
+  moderate: "anthropic:claude-sonnet-4-20250514",
+  complex: "anthropic:claude-opus-4-20250115",
+};
+
+// Model fallback chain: when a model fails, try the next one down
+export const MODEL_FALLBACK_CHAIN: Record<string, string[]> = {
+  "anthropic:claude-opus-4-20250115": [
+    "anthropic:claude-sonnet-4-20250514",
+    "anthropic:claude-haiku-4-5-20251001",
+  ],
+  "anthropic:claude-sonnet-4-20250514": ["anthropic:claude-haiku-4-5-20251001"],
+  "openai:o3": ["openai:gpt-4o", "openai:gpt-4.1-mini"],
+  "openai:gpt-4o": ["openai:gpt-4.1-mini", "openai:gpt-4.1-nano"],
+  "openai:gpt-4.1": ["openai:gpt-4.1-mini", "openai:gpt-4.1-nano"],
+  "google:gemini-2.5-pro": ["google:gemini-2.5-flash"],
 };
 
 // Amazon Q Developer per-request pricing (approximate 2026)

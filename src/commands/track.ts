@@ -43,6 +43,7 @@ const COLLECTORS: Record<AiTool, Collector | null> = {
   amazon_q: amazonQCollector,
   bolt: boltCollector,
   lovable: lovableCollector,
+  kova_orchestrator: null,
 };
 
 async function runScan(options: TrackOptions): Promise<void> {

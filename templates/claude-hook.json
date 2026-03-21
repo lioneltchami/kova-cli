@@ -1,0 +1,15 @@
+{
+	"hooks": {
+		"Stop": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "kova track --tool claude_code --quiet 2>/dev/null || true"
+					}
+				]
+			}
+		]
+	}
+}

@@ -338,6 +338,58 @@ describe("configCommand - set", () => {
 });
 
 // ---------------------------------------------------------------------------
+// config set - routing keys
+// ---------------------------------------------------------------------------
+
+describe("configCommand - set routing keys", () => {
+  it("updates routing.simple via config set", async () => {
+    const { configCommand } = await importCommand();
+    await configCommand("set", ["routing.simple", "openai:gpt-4.1-nano"]);
+
+    const { readConfig } = await import("../../src/lib/config-store.js");
+    const config = readConfig();
+    expect(config.orchestration?.routing?.simple).toBe("openai:gpt-4.1-nano");
+  });
+
+  it("updates routing.moderate via config set", async () => {
+    const { configCommand } = await importCommand();
+    await configCommand("set", ["routing.moderate", "openai:gpt-4o"]);
+
+    const { readConfig } = await import("../../src/lib/config-store.js");
+    const config = readConfig();
+    expect(config.orchestration?.routing?.moderate).toBe("openai:gpt-4o");
+  });
+
+  it("updates routing.complex via config set", async () => {
+    const { configCommand } = await importCommand();
+    await configCommand("set", [
+      "routing.complex",
+      "anthropic:claude-opus-4-20250115",
+    ]);
+
+    const { readConfig } = await import("../../src/lib/config-store.js");
+    const config = readConfig();
+    expect(config.orchestration?.routing?.complex).toBe(
+      "anthropic:claude-opus-4-20250115",
+    );
+  });
+
+  it("preserves other routing keys when updating one", async () => {
+    const { configCommand } = await importCommand();
+
+    // Set simple first
+    await configCommand("set", ["routing.simple", "openai:gpt-4.1-nano"]);
+    // Then set complex
+    await configCommand("set", ["routing.complex", "openai:o3"]);
+
+    const { readConfig } = await import("../../src/lib/config-store.js");
+    const config = readConfig();
+    expect(config.orchestration?.routing?.simple).toBe("openai:gpt-4.1-nano");
+    expect(config.orchestration?.routing?.complex).toBe("openai:o3");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // config - unknown action
 // ---------------------------------------------------------------------------
 

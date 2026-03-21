@@ -11,6 +11,7 @@ npm install -g kova-cli
 kova init          # Interactive setup wizard
 kova track         # Scan AI tool usage
 kova costs         # View cost breakdown
+kova run "your prompt"  # AI coding with cost tracking
 kova sync          # Upload to cloud dashboard
 ```
 
@@ -32,21 +33,27 @@ kova sync          # Upload to cloud dashboard
 
 ## Commands
 
-| Command            | Description                             |
-| ------------------ | --------------------------------------- |
-| `kova init`        | Interactive onboarding wizard           |
-| `kova track`       | Scan and record AI tool usage           |
-| `kova costs`       | View cost breakdowns                    |
-| `kova compare`     | Side-by-side tool/model cost comparison |
-| `kova budget`      | Manage spending budgets                 |
-| `kova sync`        | Upload usage to cloud dashboard         |
-| `kova report`      | Generate CSV/JSON/text reports          |
-| `kova login`       | Authenticate with API key               |
-| `kova logout`      | Remove credentials                      |
-| `kova account`     | View account and subscription           |
-| `kova dashboard`   | Open web dashboard in browser           |
-| `kova config`      | Manage configuration                    |
-| `kova completions` | Generate shell completions              |
+| Command            | Description                                |
+| ------------------ | ------------------------------------------ |
+| `kova init`        | Interactive onboarding wizard              |
+| `kova track`       | Scan and record AI tool usage              |
+| `kova costs`       | View cost breakdowns                       |
+| `kova compare`     | Side-by-side tool/model cost comparison    |
+| `kova budget`      | Manage spending budgets                    |
+| `kova sync`        | Upload usage to cloud dashboard            |
+| `kova report`      | Generate CSV/JSON/text reports             |
+| `kova login`       | Authenticate with API key                  |
+| `kova logout`      | Remove credentials                         |
+| `kova account`     | View account and subscription              |
+| `kova dashboard`   | Open web dashboard in browser              |
+| `kova config`      | Manage configuration                       |
+| `kova completions` | Generate shell completions                 |
+| `kova run`         | Execute AI coding tasks with model routing |
+| `kova chat`        | Interactive AI coding REPL                 |
+| `kova history`     | View past AI sessions with costs           |
+| `kova bench`       | Benchmark prompts across models            |
+| `kova hook`        | Install Claude Code integration hooks      |
+| `kova mcp`         | Start MCP server for AI assistants         |
 
 ### Enterprise Commands
 
@@ -58,6 +65,36 @@ kova sync          # Upload to cloud dashboard
 | `kova sso`         | Configure SSO authentication |
 | `kova policy`      | Manage org policies          |
 | `kova data export` | GDPR data portability export |
+
+## AI Orchestration
+
+Kova v2.1 adds intelligent AI coding features on top of cost tracking.
+
+### Smart Model Fallback
+
+When a model returns a rate limit (429) or server error (500/502/503), Kova automatically retries with the next cheaper model. Fallback chains: Opus -> Sonnet -> Haiku, o3 -> GPT-4o -> GPT-4.1-mini, Gemini Pro -> Gemini Flash.
+
+```bash
+kova config set orchestration.fallback true   # enabled by default
+```
+
+### Session Budget Guards
+
+Set a per-session spending cap. Kova warns at 80% and stops at 100%.
+
+```bash
+kova run "refactor auth module" --budget 2.00
+kova config set orchestration.session_budget 5.00  # default for all sessions
+```
+
+### Multi-File Context
+
+Attach files or glob patterns to give the AI more context:
+
+```bash
+kova run "fix the auth bug" --context src/auth.ts --context src/types.ts
+kova run "add tests" --include "src/**/*.ts"
+```
 
 ## Cloud Dashboard
 

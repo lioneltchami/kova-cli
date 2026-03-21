@@ -16,7 +16,7 @@ const VALID_TOOLS: AiTool[] = [
 	"devin",
 ];
 
-const TOOL_KEY_HELP: Record<AiTool, string> = {
+const TOOL_KEY_HELP: Partial<Record<AiTool, string>> = {
 	cursor: "Cursor Admin API key or WorkosCursorSessionToken cookie",
 	copilot: "GitHub PAT with manage_billing:copilot scope",
 	windsurf: "Windsurf Enterprise service key",
@@ -179,7 +179,13 @@ export async function configCommand(
 				"                display.show_tokens, display.show_model_breakdown,",
 			);
 			logger.info(
-				"                budget.monthly_usd, budget.daily_usd, budget.warn_at_percent",
+				"                budget.monthly_usd, budget.daily_usd, budget.warn_at_percent,",
+			);
+			logger.info(
+				"                routing.simple, routing.moderate, routing.complex,",
+			);
+			logger.info(
+				"                orchestration.fallback, orchestration.session_budget",
 			);
 			return;
 		}
@@ -195,7 +201,13 @@ export async function configCommand(
 				"                display.show_tokens, display.show_model_breakdown,",
 			);
 			logger.info(
-				"                budget.monthly_usd, budget.daily_usd, budget.warn_at_percent",
+				"                budget.monthly_usd, budget.daily_usd, budget.warn_at_percent,",
+			);
+			logger.info(
+				"                routing.simple, routing.moderate, routing.complex,",
+			);
+			logger.info(
+				"                orchestration.fallback, orchestration.session_budget",
 			);
 			return;
 		}
@@ -272,6 +284,22 @@ function buildPartialConfig(
 			return {
 				budget: { warn_at_percent: num } as KovaFinOpsConfig["budget"],
 			};
+		}
+		case "routing.simple":
+			return { orchestration: { routing: { simple: value } } } as any;
+		case "routing.moderate":
+			return { orchestration: { routing: { moderate: value } } } as any;
+		case "routing.complex":
+			return { orchestration: { routing: { complex: value } } } as any;
+		case "orchestration.fallback": {
+			const bool = parseBoolean(value);
+			if (bool === null) return null;
+			return { orchestration: { fallback: bool } } as any;
+		}
+		case "orchestration.session_budget": {
+			const num = parseNumber(value);
+			if (num === null) return null;
+			return { orchestration: { session_budget: num } } as any;
 		}
 		default:
 			return null;

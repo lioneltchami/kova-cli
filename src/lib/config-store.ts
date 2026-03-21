@@ -1,6 +1,10 @@
 import fs from "fs";
 import path from "path";
-import type { AiTool, KovaFinOpsConfig } from "../types.js";
+import type {
+  AiTool,
+  KovaFinOpsConfig,
+  OrchestrationConfig,
+} from "../types.js";
 import { CONFIG_FILE, KOVA_DATA_DIR } from "./constants.js";
 
 export interface CostCenter {
@@ -22,6 +26,7 @@ export interface KovaFinOpsConfigExtended extends KovaFinOpsConfig {
     token_expires_at?: string;
   };
   cost_centers?: CostCenter[];
+  orchestration?: OrchestrationConfig;
 }
 
 export function getConfigPath(): string {
@@ -96,12 +101,24 @@ export function updateConfig(partial: Partial<KovaFinOpsConfigExtended>): void {
       partial.cost_centers !== undefined
         ? partial.cost_centers
         : current.cost_centers,
+    orchestration:
+      partial.orchestration !== undefined
+        ? {
+            ...current.orchestration,
+            ...partial.orchestration,
+            routing: {
+              ...(current.orchestration?.routing ?? {}),
+              ...(partial.orchestration?.routing ?? {}),
+            },
+          }
+        : current.orchestration,
   };
 
   // Strip undefined optional sections to keep config clean
   if (merged.proxy === undefined) delete merged.proxy;
   if (merged.sso === undefined) delete merged.sso;
   if (merged.cost_centers === undefined) delete merged.cost_centers;
+  if (merged.orchestration === undefined) delete merged.orchestration;
 
   writeConfig(merged);
 }
